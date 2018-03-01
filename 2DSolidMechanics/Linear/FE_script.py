@@ -56,7 +56,7 @@ disp = np.zeros((2 * len(NodalCoord)-len(EssentialBcs),1))
 Fg = getForceFromGravity(NodalCoord, Connectivity, rho, g, h) #calculate force from gravity
 F = Fg
 deltad = np.zeros((2*len(NodalCoord),1))#incremental steps
-K,A,Fsig,dk_du= assembleNL(NodalCoord, Connectivity, D, D_prime,h,epsilon,sigma)#this handles the entirety of assembling the local stiffness matrices based of the equations
+K,A,Fsig,dk_du = assembleNL(NodalCoord, Connectivity, D, D_prime,h,epsilon,sigma)#this handles the entirety of assembling the local stiffness matrices based of the equations
 K_corrected, F_corrected, F_sig,DK_DU = Apply_EBC(K,F,Fsig,dk_du,NodalCoord,EssentialBcs,EssentialBcsVals)#Here we simply are applying the essential boundary conditions
 disp = spl.solve(K_corrected,F_corrected) #solve K*d=F
 #now to put the "boundaries" back
