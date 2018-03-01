@@ -31,7 +31,7 @@ Coefficients = [kappa_func,kappa_func_derx,kappa_func_dery,sigma_func]
 BCvalsType = 'Searchlight'
 valueBC = 1.0
 #--------Upwinding Boolean---------------------#
-Upwinded = False
+Upwinded = True
 #--------Filenames-----------------------------#
 meshPhysical = 'mesh/square.e'
 meshAngular = 'mesh/sphere.e'
@@ -95,6 +95,7 @@ for m in range(M):
 #---------------------------Solve----------------------------------------------#
 print("We are solving")
 SuperMatrixU = spl.solve(SuperMatrixA,SuperMatrixF)
+#SuperMatrixU = ssl.lsqr(SuperMatrixA,SuperMatrixF)
 SuperMatrixU = SuperMatrixU[:]
 #---------------------------Carry Out Angular Integration----------------------#
 print("Now carrying out our angular integration")
