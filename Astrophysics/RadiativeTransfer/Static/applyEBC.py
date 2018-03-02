@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import *
 
 
 def Apply_EBC(A,F,NodesCoord,BC_nodes,BC_vals,dictEBC):

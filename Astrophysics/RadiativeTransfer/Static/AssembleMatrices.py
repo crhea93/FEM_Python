@@ -3,7 +3,7 @@ import numpy as np
 from Local_Matrices import MatrixT,VectorF
 from getElementCoordinates import getElementCoordinates
 from elements import Element
-
+from scipy.sparse import *
 def assembleTandF(NodalCoord,AngularCoords,Connectivity,Coefficients,sourceFunc,el_type,Upwinded):
     if el_type=='Q4':
         num_node = 4

@@ -30,7 +30,7 @@ def getBCs(NodalCoord,value):
     return BCNodes,BCValues
 
 def SpotLightFunc(x,y,val):
-    if (x==-1.0) and (y>-0.3 and y<0.3):
+    if (x==-1.0) and (y>-0.9 and y<-0.50):
         return val
     else:
         return 0

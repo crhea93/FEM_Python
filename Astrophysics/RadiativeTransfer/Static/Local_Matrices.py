@@ -50,16 +50,19 @@ def VectorF(Coords,CoordsAng,Coefficients,sourceFunc,Upwinded):
                 x_coord = np.array([Coords[:,0]])@N.transpose()
                 y_coord = np.array([Coords[:,1]])@N.transpose()
                 delta = CalcDelta(Coefficients,[x_coord,y_coord],n)
-                f_ele += delta*B_T@n.transpose()*source* Jdet * weights[i] * weights[j]
+                f_ele += delta*np.dot(B_T,n.transpose())*source* Jdet * weights[i] * weights[j]
             count +=1
     return f_ele
 
-def CalcNorm(CoordinatesAngular):
+def CalcNorm(CoordinatesAngular,test_sl=False):
     norm = np.zeros((1,2),dtype = float)
-    azimuthal = np.arctan(CoordinatesAngular[1]/CoordinatesAngular[0])
-    theta = np.arccos(CoordinatesAngular[2]/np.sqrt(CoordinatesAngular[0]**2 + CoordinatesAngular[1]**2 + CoordinatesAngular[2]**2))
-    norm[0,0] = np.cos(theta)
+    azimuthal = np.arctan(CoordinatesAngular[0,1]/CoordinatesAngular[0,0])
+    theta = np.arccos(CoordinatesAngular[0,2]/np.sqrt(CoordinatesAngular[0,0]**2 + CoordinatesAngular[0,1]**2 + CoordinatesAngular[0,2]**2))
+    #norm[0,0] = 28.1*(np.pi/180)#theta    Searchlight Test
+    #norm[0,1] = 45*(np.pi/180)#azimuthal  Searchlight Test
+    norm[0,0] = theta
     norm[0,1] = azimuthal
+
     return norm
 
 
