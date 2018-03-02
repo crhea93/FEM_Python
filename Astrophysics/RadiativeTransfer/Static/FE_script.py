@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from krypy.linsys import LinearSystem, Minres
 from scipy.sparse.linalg import dsolve
 from meshes import getexodusmesh2D,getexodusmesh3D
-from AssembleMatrices import assembleTandF
+from AssembleMatrices import assembleTKandF
 from applyEBC import Apply_EBC
 from BCValues import getBCValues,getBCs
 import time
@@ -51,8 +51,8 @@ SuperMatrixF = np.zeros((Corrected_size,1))
 print("Starting loop through Ordinates")
 for m in range(M):
     print("We are on ordinate number "+str(m+1))
-    T,F_Source = assembleTandF(NodalCoord,AngularCoords[m,:], Connectivity,Coefficients, source, El_type, Upwinded)
-    A = T
+    T,K,S,F_Source = assembleTKandF(NodalCoord,AngularCoords[m,:], Connectivity,Coefficients, source, El_type, Upwinded)
+    A = T+K+S
     F = F_Source
     print("We have assembled the local matrix A and vector F")
     A_corrected,F_Corrected,NodalIDs_wout_EBC = Apply_EBC(A,F,NodalCoord,EssentialBCs,EssentialBCsVals,dictEBC)
