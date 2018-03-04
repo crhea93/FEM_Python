@@ -24,7 +24,9 @@ valueBC = 1.0
 #--------Upwinding Boolean---------------------#
 Upwinded = True
 #--------Filenames-----------------------------#
-meshPhysical = 'mesh/square_16k.e'
+meshPhysical = 'mesh/square_ref1.e'
 meshAngular = 'mesh/sphere.e'
-filenamvtk = 'Searchlight_16k'
+filenamvtk = 'Searchlight_refq'
+#--------Solver Type---------------------------#
+Solver_type = 'gmres'
 #------------------------------------------------------------------------------#

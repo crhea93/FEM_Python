@@ -76,24 +76,24 @@ for m in range(M):
     print("------------------------------------------------------------------------------")
 #---------------------------Solve----------------------------------------------#
 print("We are solving")
-#SuperMatrixU = spl.solve(SuperMatrixA,SuperMatrixF)
-#SuperMatrixU = dsolve.spsolve(SuperMatrixA, SuperMatrixF, use_umfpack=False)
-#SuperMatrixU = ssl.lsqr(SuperMatrixA,SuperMatrixF)
-#linear_system = LinearSystem(SuperMatrixA, SuperMatrixF, self_adjoint=True)
-#solver = Minres(linear_system)
 A_csc = csc_matrix((SuperMatrixA_v, (SuperMatrixA_i, SuperMatrixA_j)))
 SuperMatrixF_j = np.zeros((len(SuperMatrixF_i)))
 F_csc = csc_matrix((SuperMatrixF_v, (SuperMatrixF_i, SuperMatrixF_j)))
-#SuperMatrixU_LU = ssl.splu(A_csc)
 F = np.zeros((A_csc.shape[0],1))
 count_f = 0
 for F_vals in range(len(F)):
     if (F_vals in SuperMatrixF_i):
         F[F_vals,0] = SuperMatrixF_v[count_f]
         count_f += 1
-#SuperMatrixU = SuperMatrixU_LU.solve(F)
-#print(len(SuperMatrixU))
-SuperMatrixU = ssl.gmres(A_csc,F)[0]
+if Solver_type == 'gmres':
+    SuperMatrixU = ssl.gmres(A_csc,F)[0]
+if Solver_type == 'SuperLU':
+    SuperMatrixU_LU = ssl.splu(A_csc)
+    SuperMatrixU = SuperMatrixU_LU.solve(F)
+else:
+    print("Invalid Solver Type")
+    print("Default to gmres")
+    SuperMatrixU = ssl.gmres(A_csc,F)[0]
 #---------------------------Carry Out Angular Integration----------------------#
 print("Now carrying out our angular integration")
 U_angular = np.zeros((N_correct,1))
