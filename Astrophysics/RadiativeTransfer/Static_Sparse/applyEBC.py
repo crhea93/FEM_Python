@@ -25,10 +25,6 @@ def Apply_EBC(A,F,NodesCoord,BC_nodes,BC_vals,dictEBC):
                 F_corrected[i] = F[current_node_without] - dictEBC[BC_nodes[j]]*A[current_node_without,current_node_with]
             else: #all others based on what we already have for F_corrected just calculated
                 F_corrected[i] -=  dictEBC[BC_nodes[j]]*A[current_node_without,current_node_with]
-            '''if j==0: #if the first one affected
-                F_corrected[i] = F[current_node_without] - BC_vals[j]*A[current_node_without,current_node_with]
-            else: #all others based on what we already have for F_corrected just calculated
-                F_corrected[i] -=  BC_vals[j]*A[current_node_without,current_node_with]'''
 
     #And now T, which is really simple
     for k in range(len(Nodes_wout_IC)):
