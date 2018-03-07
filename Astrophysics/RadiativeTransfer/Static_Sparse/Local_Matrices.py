@@ -1,5 +1,7 @@
 import numpy as np
+from numba import jit
 from elements import Element
+@jit
 def MatrixT(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
     E = Element(el_type)
     Te = np.zeros((len(Coords),len(Coords)))
@@ -19,7 +21,7 @@ def MatrixT(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
                 delta = CalcDelta(Coefficients,[x_coord,y_coord],n)
                 Te += delta * np.dot(B_T,n.transpose())*np.dot(n,B) * Jdet* weights[i] * weights[j]
     return Te
-
+@jit
 def MatrixK(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
     E = Element(el_type)
     Ke = np.zeros((len(Coords),len(Coords)))

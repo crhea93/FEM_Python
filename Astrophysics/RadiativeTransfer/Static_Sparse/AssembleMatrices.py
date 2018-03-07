@@ -1,9 +1,11 @@
 #Assemble global stiffness matrix using element contributions
 import numpy as np
+from numba import jit
 from Local_Matrices import MatrixT,MatrixK,MatrixS,VectorF
 from getElementCoordinates import getElementCoordinates
 from elements import Element
 from scipy.sparse import *
+@jit
 def assembleTKandF(NodalCoord,AngularCoords,Connectivity,Coefficients,sourceFunc,el_type,Upwinded):
     if el_type=='Q4':
         num_node = 4

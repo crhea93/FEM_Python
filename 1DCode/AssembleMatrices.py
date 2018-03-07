@@ -13,13 +13,15 @@ def assembleTandF(NodalCoord,Connectivity,Coefficients,sourceFunc,Upwinded):
     F = np.zeros((num_dof,1))
     for e in range(len(Connectivity)):
         Coord_mat_el = getElementCoordinates(e,NodalCoord,Connectivity)
+        K_e = np.zeros((2,2))
+        F_e = np.zeros((2,1))
         K_e = MatrixT(Coord_mat_el,Coefficients,Upwinded)
         F_e = VectorF(Coord_mat_el,Coefficients,sourceFunc,Upwinded)
         for i in range(num_dof_el):
-            dof_1 = int(A[e][i])-1 # get degrees of freedom
+            dof_1 = int(A[e][i]) # get degrees of freedom
             F[dof_1,0] += F_e[i,0]
             for j in range(num_dof_el):
-                dof_2 = int(A[e][j])-1
+                dof_2 = int(A[e][j])
                 K[dof_1, dof_2] += K_e[i,j]
                 # end j loop
             #end i loop

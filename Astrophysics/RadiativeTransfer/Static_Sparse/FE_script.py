@@ -1,6 +1,7 @@
 ##This program will implement the finite element method for a simple 2D problem in elastostatics
 import numpy as np
 import numpy.linalg as npl
+from numba import jit
 import scipy.linalg as spl
 import scipy.sparse.linalg as ssl
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ from BCValues import getBCValues,getBCs
 import time
 from Vtkwriter import vtkwritefield
 from scipy.sparse import *
-
+import time
 
 from InputFiles.Searchlight import *
 
@@ -52,6 +53,7 @@ SuperMatrixA_v = np.array([[]])
 SuperMatrixF_i = np.array([[]])
 SuperMatrixF_v = np.array([[]])
 print("Starting loop through Ordinates")
+startTime = time.time()
 for m in range(M):
     print("We are on ordinate number "+str(m+1))
     T,K,S,F_Source = assembleTKandF(NodalCoord,AngularCoords[m,:], Connectivity,Coefficients, source, El_type, Upwinded)
@@ -74,6 +76,7 @@ for m in range(M):
                 SuperMatrixA_v = np.append(SuperMatrixA_v,A_corrected[j_local,k_local])
             #SuperMatrixA[global_dof1,global_dof2] += A_corrected[j_local,k_local]
     print("------------------------------------------------------------------------------")
+end_time_ord = time.time()
 #---------------------------Solve----------------------------------------------#
 print("We are solving")
 A_csc = csc_matrix((SuperMatrixA_v, (SuperMatrixA_i, SuperMatrixA_j)))
@@ -122,7 +125,7 @@ vtkwritefield(filenamvtk,N,len(Connectivity),x,y,Connectivity,U_Final)
 #    print(str(x[i])+" "+str(y[i])+" "+str(U_Final[i]))
 
 
-
+print("Total time is "+str(end_time_ord-startTime))
 
 
 print("Complete")

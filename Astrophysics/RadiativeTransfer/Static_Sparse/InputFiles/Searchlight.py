@@ -26,7 +26,7 @@ Upwinded = True
 #--------Filenames-----------------------------#
 meshPhysical = 'mesh/square_ref1.e'
 meshAngular = 'mesh/sphere.e'
-filenamvtk = 'Searchlight_refq'
+filenamvtk = 'Searchlight_ref1'
 #--------Solver Type---------------------------#
 Solver_type = 'gmres'
 #------------------------------------------------------------------------------#
