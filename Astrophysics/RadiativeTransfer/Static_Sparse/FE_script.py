@@ -13,6 +13,7 @@ import time
 from Vtkwriter import vtkwritefield
 from scipy.sparse import *
 import time
+from petsc4py import PETSc
 
 from InputFiles.Searchlight import *
 
@@ -48,55 +49,59 @@ Corrected_size = N*M-M*len(EssentialBCs) # Must subtract off number of EBC to
 SuperMatrixA_i = np.array([[]])
 SuperMatrixA_j = np.array([[]])
 SuperMatrixA_v = np.array([[]])
-#SuperMatrixU_i = np.array([[]])
-#SuperMatrixU_v = np.array([[]])
 SuperMatrixF_i = np.array([[]])
 SuperMatrixF_v = np.array([[]])
 print("Starting loop through Ordinates")
 startTime = time.time()
 for m in range(M):
     print("We are on ordinate number "+str(m+1))
-    T,K,S,F_Source = assembleTKandF(NodalCoord,AngularCoords[m,:], Connectivity,Coefficients, source, El_type, Upwinded)
-    A = T+K+S
-    F = F_Source
+    Ap_i,Ap_j,Ap_v,F = assembleTKandF(NodalCoord,AngularCoords[m,:], Connectivity,Coefficients, source, El_type, Upwinded)
     print("We have assembled the local matrix A and vector F")
-    A_corrected,F_Corrected,NodalIDs_wout_EBC = Apply_EBC(A,F,NodalCoord,EssentialBCs,EssentialBCsVals,dictEBC)
+    #-----------Create Dictionary for sparse nodes-----------------------------#
+    A_corrected,F_corrected,NodalIDs_wout_EBC,G_Red_map = Apply_EBC(Ap_i,Ap_j,Ap_v,F,NodalCoord,EssentialBCs,EssentialBCsVals,dictEBC)
+    '''
     print("We are now placing A_local and F_local into the Super Matrices A and F, resp.")
     for j_local in range(N_correct):
         global_dof1 = m*N_correct+j_local
         if F_Corrected[j_local] != 0:
             SuperMatrixF_i = np.append(SuperMatrixF_i,global_dof1)
             SuperMatrixF_v = np.append(SuperMatrixF_v,F_Corrected[j_local])
-        #SuperMatrixF[global_dof1,0] += F_Corrected[j_local]
         for k_local in range(N_correct):
             global_dof2 = m*N_correct+k_local
             if A_corrected[j_local,k_local] != 0:
                 SuperMatrixA_i = np.append(SuperMatrixA_i,global_dof1)
                 SuperMatrixA_j = np.append(SuperMatrixA_j,global_dof2)
-                SuperMatrixA_v = np.append(SuperMatrixA_v,A_corrected[j_local,k_local])
-            #SuperMatrixA[global_dof1,global_dof2] += A_corrected[j_local,k_local]
+                SuperMatrixA_v = np.append(SuperMatrixA_v,A_corrected[j_local,k_local])'''
     print("------------------------------------------------------------------------------")
 end_time_ord = time.time()
 #---------------------------Solve----------------------------------------------#
-print("We are solving")
-A_csc = csc_matrix((SuperMatrixA_v, (SuperMatrixA_i, SuperMatrixA_j)))
-SuperMatrixF_j = np.zeros((len(SuperMatrixF_i)))
-F_csc = csc_matrix((SuperMatrixF_v, (SuperMatrixF_i, SuperMatrixF_j)))
-F = np.zeros((A_csc.shape[0],1))
-count_f = 0
-for F_vals in range(len(F)):
-    if (F_vals in SuperMatrixF_i):
-        F[F_vals,0] = SuperMatrixF_v[count_f]
-        count_f += 1
-if Solver_type == 'gmres':
-    SuperMatrixU = ssl.gmres(A_csc,F)[0]
-if Solver_type == 'SuperLU':
-    SuperMatrixU_LU = ssl.splu(A_csc)
-    SuperMatrixU = SuperMatrixU_LU.solve(F)
-else:
-    print("Invalid Solver Type")
-    print("Default to gmres")
-    SuperMatrixU = ssl.gmres(A_csc,F)[0]
+#Create Petsc Matrix
+'''p1 = A_corrected.indptr
+p2 = A_corrected.indices
+p3 = A_corrected.data
+petsc_mat_A = PETSc.Mat().createAIJ(size=A_corrected.shape,csr=(p1,p2,p3))
+print(petsc_mat_A)
+petsc_mat_A.create(PETSc.COMM_WORLD)
+ksp = PETSc.KSP()
+ksp.create(PETSc.COMM_WORLD)
+ksp.setOperators(petsc_mat_A)
+ksp.setType('gmres')
+x = np.zeros(len(F_corrected), dtype = float)
+x_petsc = PETSc.Vec(x)
+x_petsc.create(PETSc.COMM_WORLD)
+f_petsc = PETSc.Vec(F_corrected)
+f_petsc.create(PETSc.COMM_WORLD)
+#x.setSizes(len(F_corrected))
+#x.set(0)
+#ksp.solve(f_petsc,x_petsc)'''
+if Solver_type == "gmres":
+    print("Using GMRES")
+    SuperMatrixU = ssl.gmres(A_corrected,F_corrected)[0]
+if Solver_type == "SuperLU":
+    print("Using SuperLU")
+    SuperMatrixU_LU = ssl.splu(A_corrected)
+    SuperMatrixU = SuperMatrixU_LU.solve(F_corrected)
+print(SuperMatrixU)
 #---------------------------Carry Out Angular Integration----------------------#
 print("Now carrying out our angular integration")
 U_angular = np.zeros((N_correct,1))
@@ -104,12 +109,15 @@ for ordinate in range(M):
     for dof in range(N_correct):
         U_angular[dof] += SuperMatrixU[ordinate*N_correct+dof]
 U_angular = U_angular/M
+print(U_angular)
 #----------------------------Create Dictionary of solutions--------------------#
 dictsol = {}
-count_sol_dict = 0
-for seul in NodalIDs_wout_EBC:
-    dictsol[seul] = U_angular[count_sol_dict]
-    count_sol_dict += 1
+for key,val in G_Red_map.items():
+    dictsol[key] = U_angular[val]
+#count_sol_dict = 0
+#for seul in NodalIDs_wout_EBC:
+#    dictsol[seul] = U_angular[count_sol_dict]
+#    count_sol_dict += 1
 #---------------------------Put EBCs Back--------------------------------------#
 U_Final = np.zeros((N,1))
 for NodeID,Nodevalue in dictEBC.items():
@@ -121,11 +129,8 @@ x = np.array(NodalCoord[:,0])
 y = np.array(NodalCoord[:,1])
 vtkwritefield(filenamvtk,N,len(Connectivity),x,y,Connectivity,U_Final)
 
-#for i in range(N):
-#    print(str(x[i])+" "+str(y[i])+" "+str(U_Final[i]))
 
-
-print("Total time is "+str(end_time_ord-startTime))
+print("Total time is "+str(round(end_time_ord-startTime,2))+" seconds.")
 
 
 print("Complete")
