@@ -20,10 +20,11 @@ def Apply_EBC(A_i,A_j,A_v,F,NodesCoord,BC_nodes,BC_vals,dictEBC):
     Ac_j = np.array([[]])
     Ac_v = np.array([[]])
     F_c = np.zeros(num_wout, dtype = float)
-    F = F.todense()
     A = csc_matrix((A_v,(A_i,A_j)))
-    #Afull = A.todense()
-    #A_c = np.zeros((num_wout,num_wout))
+    A = A.todok()
+    Afull = A.todense()
+    A_cdense = np.zeros((num_wout,num_wout))
+    #A_dok = dok_matrix((num_wout,num_wout), dtype = float)
 
 
 
@@ -39,44 +40,29 @@ def Apply_EBC(A_i,A_j,A_v,F,NodesCoord,BC_nodes,BC_vals,dictEBC):
             nw_count += 1
         nwo_count += 1
 
-    #nodes_without_and_in_A = list(set(A.indices).intersection(Nodes_wout_IC))
 
-    #for k in range(len(Nodes_wout_IC)):
-    #    row = Nodes_wout_IC[k]
-    #    for c in range(len(Nodes_wout_IC)):
-    #        col = Nodes_wout_IC[c]
-    #        A_c[k,c] = Afull[row,col]
-    #A_i_corrected = set(list(A_i).intersection(Nodes_wout_IC))
-    ind_dict = dict((k,i) for i,k in enumerate(A_i))
-    inter = set(ind_dict).intersection(Nodes_wout_IC)
-    indices = [ ind_dict[x] for x in inter ]
-
-    for it in range(len(indices)):
-        current_index = indices[it]
-        Ac_i = np.append(Ac_i,A_i[current_index])
-        Ac_j = np.append(Ac_j,A_j[current_index])
-        Ac_v = np.append(Ac_v,A_v[current_index])
-
-
-    '''
-    A_corrected = np.empty((len(Nodes_wout_IC), len(Nodes_wout_IC)))
-    F_corrected = np.empty((len(Nodes_wout_IC),1))
-    #Lets correct F first since it takes more work
-    for i in range(len(Nodes_wout_IC)):
-        current_node_without = Nodes_wout_IC[i]
-        for j in range(len(BC_nodes)):
-            current_node_with = BC_nodes[j]-1 #Gotta get rid of that pesky count at 1
-            if j==0: #if the first one affected
-                F_corrected[i] = F[current_node_without] - dictEBC[BC_nodes[j]]*A[current_node_without,current_node_with]
-            else: #all others based on what we already have for F_corrected just calculated
-                F_corrected[i] -=  dictEBC[BC_nodes[j]]*A[current_node_without,current_node_with]
-
-    #And now T, which is really simple
     for k in range(len(Nodes_wout_IC)):
         row = Nodes_wout_IC[k]
         for c in range(len(Nodes_wout_IC)):
             col = Nodes_wout_IC[c]
-            A_corrected[k, c] = A[row, col]
-    '''
+            A_cdense[k, c] = Afull[row, col] #uncomment to make it work :(
+
+    in_both = set(A_i).intersection(Nodes_wout_IC)
+    ind_dict = dict((k,i) for i,k in enumerate(A_i))
+    inter = set(ind_dict).intersection(Nodes_wout_IC) #lit of global dof (key for ind_dict)
+    glob_to_red = dict()
+    index_count = 0
+    for key in inter:
+        glob_to_red[key] = int(index_count)
+        index_count += 1
+    for walker in range(len(A_i)):
+        i_ind = int(A_i[walker])
+        j_ind = int(A_j[walker])
+        if i_ind in Nodes_wout_IC and j_ind in Nodes_wout_IC:
+            Ac_i = np.append(Ac_i,glob_to_red[i_ind])
+            Ac_j = np.append(Ac_j,glob_to_red[j_ind])
+            Ac_v = np.append(Ac_v,A_v[walker])
+
     A_c = coo_matrix((Ac_v,(Ac_i,Ac_j)))
-    return A_c,F_c,Nodes_wout_IC
+    print(*Ac_v, sep='\n')
+    return A_c,F_c,Nodes_wout_IC,glob_to_red
