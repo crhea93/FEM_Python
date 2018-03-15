@@ -49,8 +49,7 @@ Corrected_size = N*M-M*len(EssentialBCs) # Must subtract off number of EBC to
 SuperMatrixA_i = np.array([[]])
 SuperMatrixA_j = np.array([[]])
 SuperMatrixA_v = np.array([[]])
-SuperMatrixF_i = np.array([[]])
-SuperMatrixF_v = np.array([[]])
+SuperMatrixF = np.array([[]])
 print("Starting loop through Ordinates")
 startTime = time.time()
 for m in range(M):
@@ -66,8 +65,11 @@ for m in range(M):
         SuperMatrixA_i = np.append(SuperMatrixA_i,i_ind)
         SuperMatrixA_j = np.append(SuperMatrixA_j,j_ind)
         SuperMatrixA_v = np.append(SuperMatrixA_v,Ac_v[count_global])
-        SuperMatrixF_i = np.append(SuperMatrixF_i,i_ind)
-        SuperMatrixF_v = np.append(SuperMatrixF_v,F_corrected[i_ind])
+        #SuperMatrixF_i = np.append(SuperMatrixF_i,i_ind)
+        #SuperMatrixF_v = np.append(SuperMatrixF_v,F_corrected[i_ind])
+    for i_f in range(len(F_corrected)):
+        id_global = i_f + m*N_correct
+        SuperMatrixF = np.append(SuperMatrixF,F_corrected[id_global])
 
 
     '''A_dok = A_corrected.todok()
