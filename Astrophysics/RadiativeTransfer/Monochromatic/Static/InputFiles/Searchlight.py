@@ -1,6 +1,8 @@
 '''
 Input file for RTE
 '''
+import numpy as np
+from meshes import *
 #-----------------------------INPUTS-------------------------------------------#
 El_type = 'Q4'
 Int_over_ord = False
@@ -24,7 +26,7 @@ Coefficients = [kappa_func,kappa_func_derx,kappa_func_dery,sigma_func]
 BCvalsType = '2D set'
 valueBC = 1.0
 #--------Define Direction of Searchlight-------#
-AngularCoords = np.matrix([[np.sqrt(2)/2,np.sqrt(2)/2,1]]) # Searchlight
+AngularCoords = np.array([[np.sqrt(2)/2,np.sqrt(2)/2,1]]) # Searchlight
 #--------Upwinding Boolean---------------------#
 Upwinded = True
 #--------Filenames-----------------------------#
@@ -38,5 +40,5 @@ def mesh_read(meshPhysical):
     [NodalCoord,Connectivity,left,bottom,right,top] = getexodusmesh2D(meshPhysical)
     in_bottom_but_not_left = set(list(bottom)) - set(list(left))
     EssentialBCs = list(left) + list(in_bottom_but_not_left)
-return NodalCoord,Connectivity,EssentialBCs
+    return NodalCoord,Connectivity,EssentialBCs
 #------------------------------------------------------------------------------#

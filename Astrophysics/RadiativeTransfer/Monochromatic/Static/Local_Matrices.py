@@ -3,17 +3,16 @@ from numba import jit
 from elements import Element
 
 #-----------------------------2D-----------------------------------------------#
-def MatrixT2D(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
+def MatrixT2D(Coords,n,Coefficients,el_type,Upwinded):
     E = Element(el_type)
     Te = np.zeros((len(Coords),len(Coords)))
-    n = CalcNorm2D(CoordsAngular)
     x_ip = [-np.sqrt(3)/3,np.sqrt(3)/3]
     weights = [1, 1]
     for i in range(len(x_ip)):
         for j in range(len(x_ip)):
-            N = E.N(x_ip[i],x_ip[j])
+            N = E.N(x_ip[i],x_ip[j],0)
             N_T = N.transpose()
-            B,Jdet,G,J_inv = E.G_ext(x_ip[i],x_ip[j],Coords)
+            B,Jdet,G,J_inv = E.G_ext(x_ip[i],x_ip[j],0,Coords)
             B_T =  B.transpose()
             Te += N_T *np.dot(n,B)*Jdet*weights[i]*weights[j]
             if Upwinded == True:
@@ -23,17 +22,16 @@ def MatrixT2D(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
                 Te += delta * np.dot(B_T,n.transpose())*np.dot(n,B) * Jdet* weights[i] * weights[j]
     return Te
 @jit
-def MatrixK2D(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
+def MatrixK2D(Coords,n,Coefficients,el_type,Upwinded):
     E = Element(el_type)
     Ke = np.zeros((len(Coords),len(Coords)))
-    n = CalcNorm2D(CoordsAngular)
     x_ip = [-np.sqrt(3)/3,np.sqrt(3)/3]
     weights = [1, 1]
     for i in range(len(x_ip)):
         for j in range(len(x_ip)):
-            N = E.N(x_ip[i],x_ip[j])
+            N = E.N(x_ip[i],x_ip[j],0)
             N_T = N.transpose()
-            B,Jdet,G,J_inv = E.G_ext(x_ip[i],x_ip[j],Coords)
+            B,Jdet,G,J_inv = E.G_ext(x_ip[i],x_ip[j],0,Coords)
             B_T =  B.transpose()
             x_coord = np.array([Coords[:,0]])@N_T
             y_coord = np.array([Coords[:,1]])@N_T
@@ -44,17 +42,16 @@ def MatrixK2D(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
                 Ke += delta * np.dot(B_T,n.transpose()) * kappa_and_sigma * N * Jdet* weights[i] * weights[j]
     return Ke
 @jit
-def MatrixS2D(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
+def MatrixS2D(Coords,n,Coefficients,el_type,Upwinded):
     E = Element(el_type)
     Se = np.zeros((len(Coords),len(Coords)))
-    n = CalcNorm2D(CoordsAngular)
     x_ip = [-np.sqrt(3)/3,np.sqrt(3)/3]
     weights = [1, 1]
     for i in range(len(x_ip)):
         for j in range(len(x_ip)):
-            N = E.N(x_ip[i],x_ip[j])
+            N = E.N(x_ip[i],x_ip[j],0)
             N_T = N.transpose()
-            B,Jdet,G,J_inv = E.G_ext(x_ip[i],x_ip[j],Coords)
+            B,Jdet,G,J_inv = E.G_ext(x_ip[i],x_ip[j],0,Coords)
             B_T =  B.transpose()
             x_coord = np.array([Coords[:,0]])@N_T
             y_coord = np.array([Coords[:,1]])@N_T
@@ -65,17 +62,16 @@ def MatrixS2D(Coords,CoordsAngular,Coefficients,el_type,Upwinded):
                 Se +=  - delta * np.dot(B_T,n.transpose()) * sigma * N * Jdet* weights[i] * weights[j]
     return Se
 
-def VectorF2D(Coords,CoordsAng,Coefficients,sourceFunc,El_type,Upwinded):
+def VectorF2D(Coords,n,Coefficients,sourceFunc,El_type,Upwinded):
     E = Element(El_type)
-    n = CalcNorm2D(CoordsAng)
     weights = [1, 1]
     x_ip = [-np.sqrt(3)/3,np.sqrt(3)/3]
     f_ele = np.zeros((4,1))
     for i in range(len(x_ip)):
         for j in range(len(x_ip)):
-            N = E.N(x_ip[i],x_ip[j])
+            N = E.N(x_ip[i],x_ip[j],0)
             N_T = N.transpose()
-            B,Jdet = E.G(x_ip[i],x_ip[j],Coords)
+            B,Jdet = E.G(x_ip[i],x_ip[j],0,Coords)
             B_T = B.transpose()
             x_coord = np.array([Coords[:,0]])@N_T
             y_coord = np.array([Coords[:,1]])@N_T

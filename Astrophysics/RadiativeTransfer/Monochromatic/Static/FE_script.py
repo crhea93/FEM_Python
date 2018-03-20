@@ -13,10 +13,10 @@ from applyEBC import Apply_EBC
 from BCValues import getBCValues,getBCs
 from Vtkwriter import vtkwritefield
 from Redistribution import RedistributionFunc
-
+from array import array
 import time
 
-from InputFiles.ScatteringHalo import *
+from InputFiles.Searchlight import *
 
 
 
@@ -46,10 +46,14 @@ N_correct = N - len(EssentialBCs) #Number of DoF excluding EBCs
 Corrected_size = N*M-M*len(EssentialBCs) # Must subtract off number of EBC to
 #get corrected sizes so we can apply EBC within each Ordinate Step
 #Set up IJV (COO) Matrices
-SuperMatrixA_i = np.array([[]])
-SuperMatrixA_j = np.array([[]])
-SuperMatrixA_v = np.array([[]])
-SuperMatrixF = np.array([[]])
+#SuperMatrixA_i = np.array([[]])
+#SuperMatrixA_j = np.array([[]])
+#SuperMatrixA_v = np.array([[]])
+#SuperMatrixF = np.array([[]])
+SuperMatrixA_i = array('f')
+SuperMatrixA_j = array('f')
+SuperMatrixA_v = array('f')
+SuperMatrixF = array('f')
 print("Starting loop through Ordinates")
 startTime = time.time()
 for m in range(M):
@@ -68,9 +72,12 @@ for m in range(M):
         i_ind = int(Ac_i[count_global])+m*N_correct
         j_ind = int(Ac_j[count_global])+m*N_correct
         w = RedistributionFunc(g,n_vec_m[0])/M
-        SuperMatrixA_i = np.append(SuperMatrixA_i,i_ind)
-        SuperMatrixA_j = np.append(SuperMatrixA_j,j_ind)
-        SuperMatrixA_v = np.append(SuperMatrixA_v,Tc_v[count_global] + Kc_v[count_global]+w*Sc_v[count_global])
+        #SuperMatrixA_i = np.append(SuperMatrixA_i,i_ind)
+        #SuperMatrixA_j = np.append(SuperMatrixA_j,j_ind)
+        #SuperMatrixA_v = np.append(SuperMatrixA_v,Tc_v[count_global] + Kc_v[count_global]+w*Sc_v[count_global])
+        SuperMatrixA_i.append(i_ind)
+        SuperMatrixA_j.append(j_ind)
+        SuperMatrixA_v.append(Tc_v[count_global] + Kc_v[count_global]+w*Sc_v[count_global])
         for m2 in range(M):
             if m2 != m:
                 if El_type == 'Q4':
@@ -79,9 +86,12 @@ for m in range(M):
                     n_vec_m2 = CalcNorm3D(AngularCoords[m2,:])
                 w = RedistributionFunc(g,n_vec_m2[0])/M
                 j_s = j_ind + m2*N_correct
-                SuperMatrixA_i = np.append(SuperMatrixA_i,i_ind)
-                SuperMatrixA_j = np.append(SuperMatrixA_j,j_s)
-                SuperMatrixA_v = np.append(SuperMatrixA_v,w*Sc_v[count_global])
+                #SuperMatrixA_i = np.append(SuperMatrixA_i,i_ind)
+                #SuperMatrixA_j = np.append(SuperMatrixA_j,j_s)
+                #SuperMatrixA_v = np.append(SuperMatrixA_v,w*Sc_v[count_global])
+                SuperMatrixA_i.append(i_ind)
+                SuperMatrixA_j.append(j_s)
+                SuperMatrixA_v.append(w*Sc_v[count_global])
 
     for i_f in range(len(F_corrected)):
         id_global = i_f + m*N_correct

@@ -74,23 +74,23 @@ class Element:
 #Q4
 
 #B/c of cubit, swap (1 and 3) and (2 and 4)
-def N_1(x,y):
+def q4N_1(x,y):
     return (1/4)*(1-x)*(1-y)
 
-def N_2(x,y):
+def q4N_2(x,y):
     return (1/4)*(1+x)*(1-y)
 
-def N_3(x,y):
+def q4N_3(x,y):
     return (1/4)*(1+x)*(1+y)
 
-def N_4(x,y):
+def q4N_4(x,y):
     return (1/4)*(1-x)*(1+y)
 def N_Q4(x, y):
     N = np.zeros((1,4),dtype = float)
-    N[0,0] = N_1(x,y)
-    N[0,1] = N_2(x,y)
-    N[0,2] = N_3(x,y)
-    N[0,3] = N_4(x,y)
+    N[0,0] = q4N_1(x,y)
+    N[0,1] = q4N_2(x,y)
+    N[0,2] = q4N_3(x,y)
+    N[0,3] = q4N_4(x,y)
     return N
 
 def G_Q4(x, y, C):

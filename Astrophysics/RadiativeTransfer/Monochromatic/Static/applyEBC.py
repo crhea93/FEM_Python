@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.sparse import *
-
+from array import array
 
 def Apply_EBC(A_i,A_j,T_v,K_v,S_v,F,NodesCoord,BC_nodes,BC_vals,dictEBC):
     #first we need to see which nodes are not in the boundary!
@@ -16,11 +16,11 @@ def Apply_EBC(A_i,A_j,T_v,K_v,S_v,F,NodesCoord,BC_nodes,BC_vals,dictEBC):
     #now to fix F and K matrices
     num_wout = len(Nodes_wout_IC)
     num_with = len(dictEBC.keys())
-    Ac_i = np.array([[]])
-    Ac_j = np.array([[]])
-    Tc_v = np.array([[]])
-    Kc_v = np.array([[]])
-    Sc_v = np.array([[]])
+    Ac_i = array('f')#np.array([[]])
+    Ac_j = array('f')#np.array([[]])
+    Tc_v = array('f')#np.array([[]])
+    Kc_v = array('f')#np.array([[]])
+    Sc_v = array('f')#np.array([[]])
     F_c = np.zeros(num_wout, dtype = float)
     A = csc_matrix((T_v+K_v+S_v,(A_i,A_j)))
     A = A.todok()
@@ -61,11 +61,15 @@ def Apply_EBC(A_i,A_j,T_v,K_v,S_v,F,NodesCoord,BC_nodes,BC_vals,dictEBC):
         i_ind = int(A_i[walker])
         j_ind = int(A_j[walker])
         if i_ind in in_both and j_ind in in_both:
-            Ac_i = np.append(Ac_i,glob_to_red[i_ind])
-            Ac_j = np.append(Ac_j,glob_to_red[j_ind])
-            Tc_v = np.append(Tc_v,T_v[walker])
-            Kc_v = np.append(Kc_v,K_v[walker])
-            Sc_v = np.append(Sc_v,S_v[walker])
-
+            #Ac_i = np.append(Ac_i,glob_to_red[i_ind])
+            #Ac_j = np.append(Ac_j,glob_to_red[j_ind])
+            #Tc_v = np.append(Tc_v,T_v[walker])
+            #Kc_v = np.append(Kc_v,K_v[walker])
+            #Sc_v = np.append(Sc_v,S_v[walker])
+            Ac_i.append(glob_to_red[i_ind])
+            Ac_j.append(glob_to_red[j_ind])
+            Tc_v.append(T_v[walker])
+            Kc_v.append(K_v[walker])
+            Sc_v.append(S_v[walker])
     #A_c = coo_matrix((Ac_v,(Ac_i,Ac_j)))
     return Ac_i,Ac_j,Tc_v,Kc_v,Sc_v,F_c,Nodes_wout_IC,glob_to_red
